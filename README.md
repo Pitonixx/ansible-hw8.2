@@ -1,6 +1,7 @@
+```yaml
 ---
-- name: Install Java
-  hosts: all
+- name: Install Java #имя плейбука  
+  hosts: all #хосты на которых выполнять таски
   tasks:
     - name: Set facts for Java 11 vars
       set_fact:
@@ -70,38 +71,39 @@
         src: templates/elk.sh.j2
         dest: /etc/profile.d/elk.sh
       tags: elastic
-- name: Install Kibana
-  hosts: elk
+- name: Install Kibana #имя плейбука  
+  hosts: elk #хосты на которых выполнять таски
   tasks:
     - name: Upload tar.gz Kibana from remote URL
-      get_url:
+      get_url: #модуль скачивает файл по url
         url: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
-        dest: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
-        mode: 0755
+        dest: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz" #куда положить скаченный файл
+        mode: 0755 #права на файл
         timeout: 60
         force: true
         validate_certs: false
-      register: get_kibana
-      until: get_kibana is succeeded
-      tags: kibana
+      register: get_kibana #записывает результаты выполнения get_url в переменную get_kibana
+      until: get_kibana is succeeded #повторять get_url пока не выполнится удачно (но не более 3х раз)
+      tags: kibana #тег таска
     - name: Create directrory for Kibana
-      file:
+      file: #создает дирректорию
         state: directory
         path: "{{ kibana_home }}"
       tags: kibana
     - name: Extract Kibana in the installation directory
-      become: true
-      unarchive:
+      become: true #повышение привелегий
+      unarchive: #разархивирование
         copy: false
-        src: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
-        dest: "{{ kibana_home }}"
-        extra_opts: [--strip-components=1]
-        creates: "{{ kibana_home }}/bin/kibana"
+        src: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz" #архив
+        dest: "{{ kibana_home }}" #куда разархивировать
+        extra_opts: [--strip-components=1] #доп-опция для архиватора
+        creates: "{{ kibana_home }}/bin/kibana" #проверка появился-ли файл kibana
       tags:
         - kibana
     - name: Set environment Kibana
       become: true
-      template:
-        src: templates/kibana.sh.j2
+      template: #модуль копирует файл src в dest. при этом умеет интерполировать переменные
+        src: kibana.sh.j2
         dest: /etc/profile.d/kibana.sh
       tags: kibana
+```

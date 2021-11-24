@@ -1,6 +1,7 @@
 ---
-elasticsearch:
+elk:
   hosts:
-    localhost:
+    vagrant:
       ansible_connection: ssh
-      ansible_user: root
+      ansible_user: vagrant
+      ansible_password: vagrant
